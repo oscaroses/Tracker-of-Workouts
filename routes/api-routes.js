@@ -1,36 +1,64 @@
-const Workout = require("../models/workout.js")
+const db = require('../models/Workout');
 
-module.exports = function (app) {
+module.exports = (app) => {
+    app.get('/api/workouts', (req, res) => {
+        db.Workout.find({})
+            .then((workouts) => {
+                workouts.forEach((workout) => {
+                    workout.totalDuration = 0;
+                    workout.exercises.forEach((exercise) => {
+                        workout.totalDuration += exercise.duration;
+                    });
+                });
 
-    app.get("/api/workouts", function (req, res) {
-        Workout.find()
-            .then(data => {
-                res.json(data)
+                res.json(workouts);
             })
-            .catch(err => {
-                res.json(err)
-            })
+            .catch((err) => {
+                res.json(err);
+            });
     });
 
-    app.post("/api/workouts", function (req, res) {
-        Workout.create({})
-            .then(data => res.json(data))
-            .catch(err => {
-                console.log("err", err)
-                res.json(err)
+    // Gets all workout data
+    app.get('/api/workouts/range', (req, res) => {
+        db.Workout.find({})
+            .then((data) => {
+                res.json(data);
             })
+            .catch(({ message }) => {
+                res.json(message);
+            });
     });
 
-    app.put("/api/workouts/:id", ({ body, params }, res) => {
-        Workout.findByIdAndUpdate(
-            params.id,
-            { $push: { exercises: body } },
-            { new: true, runValidators: true }
-        )
-            .then(data => res.json(data))
-            .catch(err => {
-                console.log("err", err)
-                res.json(err)
+    // Creates a new workout
+    app.post('/api/workouts', ({ body }, res) => {
+        db.Workout.create(body)
+            .then((data) => {
+                res.json(data);
             })
+            .catch(({ message }) => {
+                res.json(message);
+            });
     });
-}
+
+    // Adds an exercise to a workout
+    app.put('/api/workouts/:id', (req, res) => {
+        db.Workout.findById(req.params.id)
+            .then((data) => {
+                let workoutExercises = data.exercises;
+
+                workoutExercises.push(req.body);
+
+                db.Workout.findByIdAndUpdate(
+                    req.params.id,
+                    data,
+                    (err, result) => {
+                        if (err) res.json(err);
+                        else res.json(result);
+                    }
+                );
+            })
+            .catch(({ message }) => {
+                res.json(message);
+            });
+    });
+};
