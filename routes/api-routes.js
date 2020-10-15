@@ -18,7 +18,6 @@ module.exports = (app) => {
             });
     });
 
-    // Gets all workout data
     app.get('/api/workouts/range', (req, res) => {
         Workout.find({})
             .then((data) => {
@@ -29,7 +28,6 @@ module.exports = (app) => {
             });
     });
 
-    // Creates a new workout
     app.post('/api/workouts', ({ body }, res) => {
         Workout.create(body)
             .then((data) => {
@@ -40,7 +38,6 @@ module.exports = (app) => {
             });
     });
 
-    // Adds an exercise to a workout
     app.put('/api/workouts/:id', (req, res) => {
         Workout.findById(req.params.id)
             .then((data) => {
